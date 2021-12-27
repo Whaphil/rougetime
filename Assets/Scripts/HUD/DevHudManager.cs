@@ -4,17 +4,24 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class DevHudManager : MonoBehaviour {
+    
+    [Header("In-game objects")]
     [SerializeField]
     Player player = null;
     [SerializeField]
-    [Range(1, 99)]
-    int damage = 10;
-    [SerializeField]
     Button menuButton = null;
+    
+    [Header("Fields")]
+    [SerializeField]
+    bool startOpen = true;
+    [SerializeField][Range(1, 99)]
+    int damgePerPress = 10;
+    
     bool open = false;
 
 
     private void Start() {
+        open = startOpen;
         if (menuButton != null) SetMenuOpen(open);
     }
 
@@ -32,6 +39,6 @@ public class DevHudManager : MonoBehaviour {
     }
 
     public void OnDamageButtonClick() {
-        player.TakeDamage(damage);
+        player.TakeDamage(damgePerPress);
     }
 }
