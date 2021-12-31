@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -11,6 +11,8 @@ public class Player : MonoBehaviour {
     public int speed = 0;
     [HideInInspector]
     public int inputDelay_ms = 250;
+    [HideInInspector]
+    public static Player instance = null;
 
     private float timeSinceLastInputCheck_ms = 250;
     public delegate void HealthChangeEvent(int healthNow, int healthPrevious);
@@ -24,6 +26,11 @@ public class Player : MonoBehaviour {
     };
 
     private void Start() {
+        if(instance != null){
+            Destroy(this.gameObject);
+            throw new TwoSingletonInstancesException("Only one Player should exist");
+        }
+        instance = this;
         OnHealthChange += (int healthNow, int healthPrevious) => { if (healthNow <= 0) Die(); };
     }
 
@@ -43,21 +50,21 @@ public class Player : MonoBehaviour {
         if (Input.GetKeyDown("d") || Input.GetKeyDown(KeyCode.RightArrow)) { inputs["RIGHT"] = true; timeSinceLastInputCheck_ms = 0; }
     }
 
-    private (int, int) getAxis() {
+    private Vector2Int getAxis() {
         int horizontal = 0;
         int vertical = 0;
         if (inputs["UP"]) vertical += 1;
         if (inputs["DOWN"]) vertical += -1;
         if (inputs["LEFT"]) horizontal -= 1;
         if (inputs["RIGHT"]) horizontal += 1;
-        return (horizontal, vertical);
+        return new Vector2Int(horizontal, vertical);
     }
 
-    private void handleInput((int, int) axis) {
+    private void handleInput(Vector2Int axis) {
         if (timeSinceLastInputCheck_ms >= 125) {
             transform.position = new Vector3(
-                transform.position.x + axis.Item1,
-                transform.position.y + axis.Item2,
+                transform.position.x + axis.x,
+                transform.position.y + axis.y,
                 transform.position.z
             );
             List<string> keys = inputs.Keys.ToList<string>();
@@ -75,4 +82,10 @@ public class Player : MonoBehaviour {
     }
 }
 
+public class TwoSingletonInstancesException :Exception{
+    static string defaultMessage = "Singleton Pattern was not respected";
+    public TwoSingletonInstancesException(string message = null)
+        :base(message??defaultMessage){
 
+    }
+}
